@@ -3,15 +3,17 @@
 #include "DrawDebugHelpers.h"
 // Sets default values
 AGun::AGun()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+{ 	
+	//I am not using tick 
 	PrimaryActorTick.bCanEverTick = false;
 	Root=CreateDefaultSubobject<USceneComponent>(TEXT("Root Component"));
+	//Assigning the root component
 	RootComponent=Root;
 	Mesh=CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh "));
 	Mesh->SetupAttachment(Root);
 
 }
+
 void AGun::Fire()
 {
 	if (Emitter)
@@ -22,6 +24,7 @@ void AGun::Fire()
 	{
 		UE_LOG(LogTemp,Error,TEXT("UParticleSystem not found for gun(Emitter)"));
 	}
+	//The player is the owner of this
 	APawn *GunShooter=Cast<APawn>(GetOwner());
 	if (GunShooter)
 	{
@@ -31,27 +34,30 @@ void AGun::Fire()
 		if (GunShooterController)
 		{
 			GunShooterController->GetPlayerViewPoint(Location,Rotation);
-			LineEnd=Location+Rotation.Vector()*1000;
+			LineEnd=Location+Rotation.Vector()*RangeForWeapon;
 			FHitResult Hit;
 			FCollisionQueryParams Param;
+			//Don't want the bullet hitting the player now.
 			Param.AddIgnoredActor(this);
 			Param.AddIgnoredActor(GetOwner());
 			if (GetWorld()->LineTraceSingleByChannel(Hit,Location,LineEnd,ECollisionChannel::ECC_GameTraceChannel1,Param))
 			{
 				//DrawDebugPoint(GetWorld(),Hit.Location,20.f,FColor::Red,true);
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),HitEffect,Hit.Location,(Rotation*-1));
-				AActor *ActorBeingHit=Hit.GetActor();	
+				AActor *ActorBeingHit=Hit.GetActor();				
 				if (ActorBeingHit)
 				{
+					//just to be sure
 					if (ActorBeingHit!=GunShooter)
 					{
 						if (HitSound)
 						{
 							UGameplayStatics::PlaySoundAtLocation(GetWorld(),HitSound,Hit.Location);
 						}
+						//Because the hit effect would have a rotation opposite to that of the player
 						FPointDamageEvent DamageEvent(Damage,Hit,(Rotation*-1).Vector(),nullptr);
 						float DamageCheck=ActorBeingHit->TakeDamage(Damage,DamageEvent,GunShooterController->GetInstigatorController(),GunShooter);
-						//UE_LOG(LogTemp,Warning,TEXT("Damage in gun.cpp: %f"),DamageCheck);
+						UE_LOG(LogTemp,Warning,TEXT("Damage in gun.cpp: %f"),DamageCheck);
 					}
 				}
 			}
