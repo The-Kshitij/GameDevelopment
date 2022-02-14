@@ -16,17 +16,23 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Health=100.f;
+	Health=MaxHealth;
 	Gun=GetWorld()->SpawnActor<AGun>(GunClass);
+	//The gun that I was using had a charm attached to it, I didn't want it to be shown on the weapon
 	GetMesh()->HideBoneByName(TEXT("weapon_r"),EPhysBodyOp::PBO_None);
-	Gun->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,TEXT("Weapon_Socket"));
-	Gun->SetOwner(this);
+	//Attatching the gun to a socket
+	if (Gun)
+	{
+		Gun->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,TEXT("Weapon_Socket"));
+		Gun->SetOwner(this);
+	}
 }
 
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//If the player died, then should restart the game
 	if (dead)
 	{
 		//UE_LOG(LogTemp,Warning,TEXT("Time in tick: %f"),UGameplayStatics::GetTimeSeconds(GetWorld()));
@@ -52,6 +58,7 @@ void AMainCharacter::Tick(float DeltaTime)
 // Called to bind functionality to input
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	//Required bindings 
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAction(TEXT("Jump"),IE_Pressed,this,&ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Fire"),IE_Pressed,this,&AMainCharacter::Shoot);
@@ -75,8 +82,11 @@ void AMainCharacter::Shoot()
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(),FireSound,GetActorLocation());
 	}
+	//The fire functions handles all the required proceedings for firing a weapon
 	Gun->Fire();
 }
+
+//Called for receiving damage 
 float AMainCharacter::TakeDamage(float Damage,struct FDamageEvent const &DamageEvent,AController *EventInstigator,AActor *DamageCauser)
 {
 	float DamageToApply=Super::TakeDamage(Damage,DamageEvent,EventInstigator,DamageCauser);
@@ -108,6 +118,7 @@ float AMainCharacter::TakeDamage(float Damage,struct FDamageEvent const &DamageE
 	}
 	return DamageToApply;
 }
+
 bool AMainCharacter::IsDead()
 {
 	return (Health<=0);
