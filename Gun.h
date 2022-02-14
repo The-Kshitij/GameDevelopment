@@ -39,6 +39,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float Damage=50.f;
+	
+	UPROPERTY(EditAnywhere)
+	float RangeForWeapon = 1000.f;
 
 /*
 protected:
