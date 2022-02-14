@@ -1,5 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+/*
+The fire function of is called from outside this object when the player wants to fire the weapon. If the bullet hits somethings then a hiteffect is spawned at that place. A line
+trace is performed to check for any object in range. The player is made the owner of the weapon in the player script
+*/
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,9 +21,10 @@ public:
 	void Fire();
 
 private:
+	//For storing the root component
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent *Root;
-
+	
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent *Mesh;
 
